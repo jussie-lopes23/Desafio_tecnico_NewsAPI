@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.desafiotecniconewsapi.model.Article
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,8 +88,8 @@ fun DetailScreen(navController: NavController, article: Article) {
             article.url?.let { url ->
                 Button(
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        context.startActivity(intent)
+                        val encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
+                        navController.navigate("webview/$encodedUrl")
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

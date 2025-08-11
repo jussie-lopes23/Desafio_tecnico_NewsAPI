@@ -43,6 +43,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.desafiotecniconewsapi.model.Article
 import com.example.desafiotecniconewsapi.ui.screens.DetailScreen
+import com.example.desafiotecniconewsapi.ui.screens.WebViewScreen
 import com.example.desafiotecniconewsapi.ui.state.NewsUiState
 import com.example.desafiotecniconewsapi.ui.theme.DesafioTecnicoNewsAPITheme
 import com.example.desafiotecniconewsapi.viewmodel.NewsViewModel
@@ -62,6 +63,12 @@ class MainActivity : ComponentActivity() {
                         val article = navController.previousBackStackEntry?.savedStateHandle?.get<Article>("article")
                         article?.let {
                             DetailScreen(navController = navController, article = it)
+                        }
+                    }
+                    composable("webview/{url}") { backStackEntry ->
+                        val url = backStackEntry.arguments?.getString("url")
+                        url?.let {
+                            WebViewScreen(url = it)
                         }
                     }
                 }
