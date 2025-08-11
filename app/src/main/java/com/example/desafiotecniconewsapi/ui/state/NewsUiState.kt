@@ -1,4 +1,4 @@
-package com.example.desafiotecniconewsapi.uistate
+package com.example.desafiotecniconewsapi.ui.state
 
 import com.example.desafiotecniconewsapi.model.Article
 

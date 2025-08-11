@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,9 +36,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.desafiotecniconewsapi.model.Article
-import com.example.desafiotecniconewsapi.uistate.NewsUiState
+import com.example.desafiotecniconewsapi.ui.screens.DetailScreen
+import com.example.desafiotecniconewsapi.ui.state.NewsUiState
 import com.example.desafiotecniconewsapi.ui.theme.DesafioTecnicoNewsAPITheme
 import com.example.desafiotecniconewsapi.viewmodel.NewsViewModel
 
@@ -47,8 +53,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DesafioTecnicoNewsAPITheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    NewsApp(modifier = Modifier.padding(innerPadding))
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = "newsList") {
+                    composable("newsList") {
+                        NewsApp(navController = navController)
+                    }
+                    composable("detail") {
+                        val article = navController.previousBackStackEntry?.savedStateHandle?.get<Article>("article")
+                        article?.let {
+                            DetailScreen(navController = navController, article = it)
+                        }
+                    }
                 }
             }
         }
@@ -56,50 +71,59 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NewsApp(modifier: Modifier = Modifier, newsViewModel: NewsViewModel = viewModel()) {
+fun NewsApp(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    newsViewModel: NewsViewModel = viewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
     val newsUiState by newsViewModel.newsUiState.collectAsState()
 
-    Column(modifier = modifier.padding(16.dp)) {
-        TextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            label = { Text("Buscar notícias por título") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = { newsViewModel.fetchNews(searchQuery) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Buscar")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
+    Scaffold(modifier = modifier) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Buscar notícias por título") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = { newsViewModel.fetchNews(searchQuery) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Buscar")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-        when (newsUiState) {
-            is NewsUiState.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+            when (newsUiState) {
+                is NewsUiState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            }
-            is NewsUiState.Success -> {
-                val articles = (newsUiState as NewsUiState.Success).news
-                NewsList(articles = articles)
-            }
-            is NewsUiState.Error -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = (newsUiState as NewsUiState.Error).message)
+                is NewsUiState.Success -> {
+                    val articles = (newsUiState as NewsUiState.Success).news
+                    NewsList(articles = articles, navController = navController)
                 }
-            }
-            is NewsUiState.Empty -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Nenhuma notícia encontrada.")
+                is NewsUiState.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = (newsUiState as NewsUiState.Error).message)
+                    }
+                }
+                is NewsUiState.Empty -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Nenhuma notícia encontrada.")
+                    }
                 }
             }
         }
@@ -107,20 +131,24 @@ fun NewsApp(modifier: Modifier = Modifier, newsViewModel: NewsViewModel = viewMo
 }
 
 @Composable
-fun NewsList(articles: List<Article>) {
+fun NewsList(articles: List<Article>, navController: NavController) {
     LazyColumn {
         items(articles) { article ->
-            ArticleItem(article = article)
+            ArticleItem(article = article, navController = navController)
         }
     }
 }
 
 @Composable
-fun ArticleItem(article: Article) {
+fun ArticleItem(article: Article, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable {
+                navController.currentBackStackEntry?.savedStateHandle?.set("article", article)
+                navController.navigate("detail")
+            },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
@@ -142,13 +170,5 @@ fun ArticleItem(article: Article) {
                 article.description?.let { Text(text = it, style = MaterialTheme.typography.bodyMedium) }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    DesafioTecnicoNewsAPITheme {
-        NewsApp()
     }
 }

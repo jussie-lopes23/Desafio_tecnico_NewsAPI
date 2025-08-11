@@ -3,7 +3,7 @@ package com.example.desafiotecniconewsapi.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.desafiotecniconewsapi.network.RetrofitInstance
-import com.example.desafiotecniconewsapi.uistate.NewsUiState
+import com.example.desafiotecniconewsapi.ui.state.NewsUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
