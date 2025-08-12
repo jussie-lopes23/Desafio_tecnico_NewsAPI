@@ -89,10 +89,17 @@ Menu → Arquivo → Abrir → selecione a pasta do projeto.
 
 Copie sua chave de API .
 
-Substitua a chave no projeto
+**Substitua a chave no projeto**
 
 Abra o arquivo: app/src/main/java/com/example/desafiotecniconewsapi/viewmodel/NewsViewModel.kt
-Localize a variável apiKey e cole sua chave da NewsAPI.
+
+Localize a variável "apiKey" e cole sua chave da NewsAPI.
+
+**Sincronizar e executar**
+
+Menu → Arquivo → Sincronizar projeto com arquivos Gradle
+
+Clique ▶ para rodar no emulador ou dispositivo físico.
 
 ---
 
