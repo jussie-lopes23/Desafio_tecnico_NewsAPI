@@ -27,6 +27,9 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     private val apiKey = "1a23f717273c48daba0a8d04d39609d0"
 
     init {
+        // Inicia a busca por notícias assim que o ViewModel é criado
+        fetchNews("últimas notícias do Brasil")
+
         viewModelScope.launch {
             searchQueryDao.getSearchHistory().collectLatest { history ->
                 _searchHistory.value = history
