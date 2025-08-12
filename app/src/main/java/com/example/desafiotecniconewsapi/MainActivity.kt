@@ -16,10 +16,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -42,6 +49,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.desafiotecniconewsapi.model.Article
+import com.example.desafiotecniconewsapi.model.SearchQuery
 import com.example.desafiotecniconewsapi.ui.screens.DetailScreen
 import com.example.desafiotecniconewsapi.ui.screens.WebViewScreen
 import com.example.desafiotecniconewsapi.ui.state.NewsUiState
@@ -77,6 +85,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsApp(
     navController: NavController,
@@ -86,41 +95,48 @@ fun NewsApp(
     var searchQuery by remember { mutableStateOf("") }
     val newsUiState by newsViewModel.newsUiState.collectAsState()
     val searchHistory by newsViewModel.searchHistory.collectAsState()
+    var expanded by remember { mutableStateOf(false) }
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                label = { Text("Buscar notícias por título") },
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it }, // <--- A linha foi alterada aqui
+                    label = { Text("Buscar notícias por título") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    colors = ExposedDropdownMenuDefaults.textFieldColors()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    searchHistory.forEach { item ->
+                        DropdownMenuItem(
+                            text = { Text(item.query) },
+                            onClick = {
+                                searchQuery = item.query
+                                expanded = false
+                                newsViewModel.fetchNews(item.query)
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = { newsViewModel.fetchNews(searchQuery) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Buscar")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Histórico de Pesquisas", style = MaterialTheme.typography.titleMedium)
-            LazyColumn(
-                modifier = Modifier.height(150.dp)
-            ) {
-                items(searchHistory) { item ->
-                    Text(
-                        text = item.query,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                searchQuery = item.query
-                                newsViewModel.fetchNews(item.query)
-                            }
-                            .padding(vertical = 4.dp),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
             }
             Spacer(modifier = Modifier.height(16.dp))
 
