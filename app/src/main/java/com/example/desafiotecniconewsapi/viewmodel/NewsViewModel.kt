@@ -24,10 +24,11 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     private val _searchHistory = MutableStateFlow<List<SearchQuery>>(emptyList())
     val searchHistory: StateFlow<List<SearchQuery>> = _searchHistory.asStateFlow()
 
-    private val apiKey = "1a23f717273c48daba0a8d04d39609d0"
+    //Adicione sua chave da API Aqui
+    private val apiKey = ""
 
     init {
-        // Inicia a busca por notícias assim que o ViewModel é criado
+
         fetchNews("últimas notícias do Brasil")
 
         viewModelScope.launch {
