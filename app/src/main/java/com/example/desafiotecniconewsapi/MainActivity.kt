@@ -85,6 +85,7 @@ fun NewsApp(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val newsUiState by newsViewModel.newsUiState.collectAsState()
+    val searchHistory by newsViewModel.searchHistory.collectAsState()
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
@@ -100,6 +101,26 @@ fun NewsApp(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Buscar")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("Histórico de Pesquisas", style = MaterialTheme.typography.titleMedium)
+            LazyColumn(
+                modifier = Modifier.height(150.dp)
+            ) {
+                items(searchHistory) { item ->
+                    Text(
+                        text = item.query,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                searchQuery = item.query
+                                newsViewModel.fetchNews(item.query)
+                            }
+                            .padding(vertical = 4.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
 
