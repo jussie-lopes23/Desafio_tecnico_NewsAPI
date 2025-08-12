@@ -97,7 +97,7 @@ Localize a variável "apiKey" e cole sua chave da NewsAPI.
 
 **Sincronizar e executar**
 
-Menu → Arquivo → Sincronizar projeto com arquivos Gradle
+Menu → Arquivo → Sincronizar projeto com arquivos Gradle ("Sync Project with Gradle Files")
 
 Clique ▶ para rodar no emulador ou dispositivo físico.
 
